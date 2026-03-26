@@ -18,7 +18,7 @@ jobs:
           ruby-version: "3.4"
 
       - name: Build gem
-        run: gem build nokk-agents.gemspec
+        run: gem build nexagent-agents.gemspec
 
       - name: Publish to GitHub Packages
         run: |
@@ -26,4 +26,4 @@ jobs:
           echo "---" > ~/.gem/credentials
           echo ":github: Bearer ${{ secrets.GITHUB_TOKEN }}" >> ~/.gem/credentials
           chmod 0600 ~/.gem/credentials
-          gem push --key github --host https://rubygems.pkg.github.com/nextlw nokk-agents-*.gem
+          gem push --key github --host https://rubygems.pkg.github.com/nextlw nexagent-agents-*.gem
