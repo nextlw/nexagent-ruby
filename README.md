@@ -19,7 +19,7 @@
 <br>
 </div>
 
-O **Nokk Agents** é um framework Ruby para construir sistemas de IA com múltiplos agentes que colaboram entre si de forma transparente. Baseado no [ai-agents](https://github.com/chatwoot/ai-agents) da Chatwoot, estendido com customizações para o ecossistema Nokk.
+O **Nexagent** é um framework Ruby para construir sistemas de IA com múltiplos agentes que colaboram entre si de forma transparente. Baseado no [ai-agents](https://github.com/chatwoot/ai-agents) da Chatwoot, estendido com customizações para o ecossistema Nexagent.
 
 Cada agente possui suas próprias instruções, ferramentas e relações de handoff. O sistema gerencia automaticamente a passagem de conversa entre agentes especializados — o usuário final nunca percebe a troca.
 
@@ -41,14 +41,14 @@ Cada agente possui suas próprias instruções, ferramentas e relações de hand
 Via GitHub:
 
 ```ruby
-gem 'nokk-agents', github: 'nextlw/nokk-agents'
+gem 'nexagent-agents', github: 'nextlw/nexagent-ruby'
 ```
 
 Ou via GitHub Packages (requer autenticação):
 
 ```ruby
 source "https://rubygems.pkg.github.com/nextlw" do
-  gem "nokk-agents", "~> 0.9.0"
+  gem "nexagent-agents", "~> 0.9.0"
 end
 ```
 
@@ -481,13 +481,13 @@ Integração opcional com OpenTelemetry para rastreamento de execução. Compat�
 ```ruby
 require 'agents/instrumentation'
 
-tracer = OpenTelemetry.tracer_provider.tracer('nokk-agents')
+tracer = OpenTelemetry.tracer_provider.tracer('nexagent-agents')
 runner = Agents::Runner.with_agents(triagem, vendas, suporte)
 
 Agents::Instrumentation.install(runner,
   tracer: tracer,
-  trace_name: "nokk.agents.run",
-  span_attributes: { "app.name" => "nokk-omni" },
+  trace_name: "nexagent.agents.run",
+  span_attributes: { "app.name" => "nexagent-omni" },
   attribute_provider: ->(ctx) {
     { "session.id" => ctx.context[:chat_id] }
   }
@@ -497,7 +497,7 @@ Agents::Instrumentation.install(runner,
 ### Hierarquia de Spans
 
 ```
-nokk.agents.run
+nexagent.agents.run
 ├── agent.Triagem
 │   ├── .generation          ← chamada LLM (modelo + tokens)
 │   └── .handoff             ← evento de transferência
@@ -524,7 +524,7 @@ Este projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/). As ver
 Para publicar uma nova versão:
 1. Atualize `lib/agents/version.rb`
 2. Faça push para `main`
-3. Dispare o workflow "Publish nokk-agents" via GitHub Actions com a versão desejada
+3. Dispare o workflow "Publish nexagent-agents" via GitHub Actions com a versão desejada
 
 ---
 

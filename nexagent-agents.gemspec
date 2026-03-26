@@ -3,14 +3,14 @@
 require_relative "lib/agents/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "nokk-agents"
+  spec.name = "nexagent-agents"
   spec.version = Agents::VERSION
-  spec.authors = ["Nokk"]
-  spec.email = ["dev@nokk.com.br"]
+  spec.authors = ["Nexagent"]
+  spec.email = ["dev@nexagent.com.br"]
 
-  spec.summary = "Nokk AI Agents SDK - Multi-agent orchestration framework"
-  spec.description = "Fork of ai-agents with Nokk-specific extensions for multi-agent AI workflows"
-  spec.homepage = "https://github.com/nextlw/nokk-agents"
+  spec.summary = "Nexagent AI Agents SDK - Multi-agent orchestration framework"
+  spec.description = "Fork of ai-agents with Nexagent-specific extensions for multi-agent AI workflows"
+  spec.homepage = "https://github.com/nextlw/nexagent-ruby"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1.0"
 
