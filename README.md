@@ -3,7 +3,7 @@
 <p>
   <img src="https://www.nok-chat.com.br/brand/nokk-icon.svg" height="80px"/>
 </p>
-<h1>Nokk Agents</h1>
+<h1>Nex-Agents</h1>
 <p>
   <strong>SDK Ruby para orquestração de agentes de IA multi-agente</strong>
 </p>
