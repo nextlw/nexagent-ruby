@@ -22,6 +22,7 @@ module Agents
       agent_handoff
       llm_call_complete
       chat_created
+      response_validate
     ].freeze
 
     def initialize(callbacks = {})
@@ -60,6 +61,28 @@ module Agents
       define_method("emit_#{event_type}") do |*args|
         emit(event_type, *args)
       end
+    end
+
+    # Evaluates response validators with semantic return values.
+    # Unlike emit() which is fire-and-forget, this method returns feedback.
+    # Returns nil if all validators approve, or the first feedback string if rejected.
+    #
+    # @param args [Array] Arguments to pass to validators (output, agent_name, context_wrapper)
+    # @return [String, nil] Feedback string if rejected, nil if approved
+    def evaluate_response_validators(*args)
+      validators = @callbacks[:response_validate] || []
+      return nil if validators.empty?
+
+      validators.each do |validator|
+        safe_args = arity_safe_args(validator, args)
+        result = validator.call(*safe_args)
+        return result.to_s if result.present?
+      rescue StandardError => e
+        warn "Response validator error: #{e.message}"
+        # fail-open: validator error = approved
+      end
+
+      nil
     end
 
     private

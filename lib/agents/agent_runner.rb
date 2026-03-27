@@ -52,7 +52,8 @@ module Agents
         agent_thinking: [],
         agent_handoff: [],
         llm_call_complete: [],
-        chat_created: []
+        chat_created: [],
+        response_validate: []
       }
     end
 
@@ -65,7 +66,8 @@ module Agents
     # @param max_turns [Integer] Maximum turns before stopping (default: 10)
     # @param headers [Hash, nil] Custom HTTP headers to pass through to the underlying LLM provider
     # @return [RunResult] Execution result with output, messages, and updated context
-    def run(input, context: {}, max_turns: Runner::DEFAULT_MAX_TURNS, headers: nil)
+    def run(input, context: {}, max_turns: Runner::DEFAULT_MAX_TURNS, headers: nil,
+            max_validation_retries: Runner::DEFAULT_MAX_VALIDATION_RETRIES)
       # Determine which agent should handle this conversation
       # Uses conversation history to maintain continuity across handoffs
       current_agent = determine_conversation_agent(context)
@@ -78,7 +80,8 @@ module Agents
         registry: @registry,
         max_turns: max_turns,
         headers: headers,
-        callbacks: @callbacks
+        callbacks: @callbacks,
+        max_validation_retries: max_validation_retries
       )
     end
 
@@ -175,6 +178,20 @@ module Agents
       return self unless block
 
       @callbacks_mutex.synchronize { @callbacks[:llm_call_complete] << block }
+      self
+    end
+
+    # Register a callback for response validation.
+    # Unlike other callbacks, this one has semantic return values:
+    # return nil if the response is approved, or a String with feedback for rewriting.
+    #
+    # @param block [Proc] Callback that receives (output, agent_name, context_wrapper)
+    #   Returns nil if approved or String with feedback for rewriting
+    # @return [self] For method chaining
+    def on_response_validate(&block)
+      return self unless block
+
+      @callbacks_mutex.synchronize { @callbacks[:response_validate] << block }
       self
     end
 

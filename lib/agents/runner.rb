@@ -53,6 +53,7 @@ module Agents
   #   # Triage agent will handoff to billing_agent
   class Runner
     DEFAULT_MAX_TURNS = 10
+    DEFAULT_MAX_VALIDATION_RETRIES = 2
 
     class MaxTurnsExceeded < StandardError; end
     class AgentNotFoundError < StandardError; end
@@ -83,7 +84,8 @@ module Agents
     # @param headers [Hash, nil] Custom HTTP headers passed to the underlying LLM provider
     # @param callbacks [Hash] Optional callbacks for real-time event notifications
     # @return [RunResult] The result containing output, messages, and usage
-    def run(starting_agent, input, context: {}, registry: {}, max_turns: DEFAULT_MAX_TURNS, headers: nil, callbacks: {})
+    def run(starting_agent, input, context: {}, registry: {}, max_turns: DEFAULT_MAX_TURNS, headers: nil, callbacks: {},
+            max_validation_retries: DEFAULT_MAX_VALIDATION_RETRIES)
       # The starting_agent is already determined by AgentRunner based on conversation history
       current_agent = starting_agent
 
@@ -91,6 +93,7 @@ module Agents
       context_copy = deep_copy_context(context)
       context_wrapper = RunContext.new(context_copy, callbacks: callbacks)
       current_turn = 0
+      validation_retries = 0
 
       # Emit run start event
       context_wrapper.callback_manager.emit_run_start(current_agent.name, input, context_wrapper)
@@ -210,6 +213,25 @@ module Agents
 
         # If no tools were called, we have our final response
 
+        # Response validation: run registered validators before returning
+        if validation_retries < max_validation_retries
+          feedback = context_wrapper.callback_manager.evaluate_response_validators(
+            response.content, current_agent.name, context_wrapper
+          )
+          if feedback
+            validation_retries += 1
+            Agents.logger&.info(
+              "[Runner] Response rejected by validator (attempt #{validation_retries}/#{max_validation_retries}): " \
+              "#{feedback.truncate(100)}"
+            )
+            context_wrapper.callback_manager.emit_agent_thinking(
+              current_agent.name, "(validation feedback)", context_wrapper
+            )
+            chat.ask(feedback)
+            next
+          end
+        end
+
         # Save final state before returning
         save_conversation_state(chat, context_wrapper, current_agent)
 
@@ -217,7 +239,8 @@ module Agents
           output: response.content,
           messages: Helpers::MessageExtractor.extract_messages(chat, current_agent),
           usage: context_wrapper.usage,
-          context: context_wrapper.context
+          context: context_wrapper.context,
+          validation_retries: validation_retries
         )
 
         # Emit agent complete and run complete events
