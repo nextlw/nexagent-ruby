@@ -76,7 +76,7 @@ module Agents
       validators.each do |validator|
         safe_args = arity_safe_args(validator, args)
         result = validator.call(*safe_args)
-        return result.to_s if result.present?
+        return result.to_s if result && !result.to_s.empty?
       rescue StandardError => e
         warn "Response validator error: #{e.message}"
         # fail-open: validator error = approved

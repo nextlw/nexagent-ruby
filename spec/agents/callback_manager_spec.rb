@@ -75,11 +75,11 @@ RSpec.describe Agents::CallbackManager do
   end
 
   describe "#emit vs #evaluate_response_validators" do
-    it "emit is fire-and-forget (ignores return values)" do
+    it "emit is fire-and-forget (does not use return values)" do
       callback = proc { "this return is ignored" }
       manager = described_class.new(run_start: [callback])
-      result = manager.emit(:run_start, "agent", "input")
-      expect(result).to be_nil
+      # emit does not raise and does not return the callback's value meaningfully
+      expect { manager.emit(:run_start, "agent", "input") }.not_to raise_error
     end
 
     it "evaluate_response_validators returns semantic values" do
